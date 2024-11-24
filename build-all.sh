@@ -5,31 +5,40 @@ set -e
 
 # Array of application directories
 apps=("menu-app" "header-app" "footer-app" "main-app")
+pids=()
 
-# Loop through each app and build it
-for app in "${apps[@]}"
+# Loop through each app, build it, and start the preview server
+for index in "${!apps[@]}"
 do
-  echo "=============================="
-  echo "Building $app..."
-  echo "------------------------------"
+  app="${apps[$index]}"
+  (
+    echo "=============================="
+    echo "Building $app..."
+    echo "------------------------------"
 
-  # Navigate to the app directory
-  cd $app
+    # Navigate to the app directory
+    cd $app
 
-  # Install dependencies
-  echo "Installing dependencies for $app..."
-  bun install
+    # Install dependencies
+    echo "Installing dependencies for $app..."
+    bun install
 
-  # Build the application
-  echo "Building $app..."
-  bun run build
+    # Build the application
+    echo "Building $app..."
+    bun run build
 
-  # Navigate back to the root directory
-  cd ..
+    # Start the preview server on the assigned port
+    echo "Starting preview for $app "
+    bun run preview &
 
-  echo "Finished building $app."
-  echo "------------------------------"
+    # Capture the PID of the preview process
+    preview_pid=$!
+    pids+=($preview_pid)
+
+    # Navigate back to the root directory
+    cd ..
+
+    echo "Preview for $app is running"
+    echo "------------------------------"
+  )
 done
-
-echo "=============================="
-echo "All applications have been built successfully."
